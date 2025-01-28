@@ -6,6 +6,9 @@
 # Contributor: graysky <graysky@archlinux.us>
 # Contributor: <kastor@fobos.org.ar>
 
+_arch="$( \
+  uname \
+    -m)"
 _pkg=lrzip
 pkgname="${_pkg}"
 pkgver=0.651
@@ -55,10 +58,27 @@ prepare() {
 }
 
 build() {
+  local \
+    _cflags=() \
+    _cxxflags=()
+  _cflags+=(
+    $CFLAGS
+    -fomit-frame-pointer
+  )
+  _cxxflags+=(
+    $CXXFLAGS
+    -fomit-frame-pointer
+  )
+  if [[ "${_arch}" != "x86_64" ]]; then
+    _cxxflags+=(
+      -DNOJIT 
+    )
+  fi
   cd \
     "${pkgname}"
-  CFLAGS="$CFLAGS -fomit-frame-pointer"
-  CXXFLAGS="$CXXFLAGS -fomit-frame-pointer"
+  export \
+    CFLAGS="${_cflags[*]}" \
+    CXXFLAGS="${_cxxflags[*]}"
   ./autogen.sh \
     --prefix="/usr" \
     "$flags"
